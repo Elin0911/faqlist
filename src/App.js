@@ -6,8 +6,8 @@ const baseAppCss = `
     padding: 24px;
     background-color: #f3f4f6;
     min-height: 100vh;
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: 1fr;
     gap: 24px;
     border-radius: 12px;
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
@@ -16,7 +16,7 @@ const baseAppCss = `
 
 @media (min-width: 1024px) {
     .app-container {
-        flex-direction: row;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 }
 
@@ -46,15 +46,32 @@ const baseAppCss = `
     margin-bottom: 24px;
 }
 
-.add-category-btn {
+@media (max-width: 640px) {
+    .button-group {
+        flex-direction: column;
+    }
+}
+
+.add-category-btn, .clear-content-btn {
     padding: 12px 24px;
-    background-color: #2563eb;
-    color: #ffffff;
     border-radius: 8px;
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
     transition-property: background-color, transform;
     transition-duration: 300ms;
     transition-timing-function: ease-in-out;
+    width: 100%;
+    color: #ffffff;
+}
+
+@media (min-width: 641px) {
+    .add-category-btn, .clear-content-btn {
+        width: auto;
+    }
+}
+
+
+.add-category-btn {
+    background-color: #2563eb;
 }
 
 .add-category-btn:hover {
@@ -69,14 +86,7 @@ const baseAppCss = `
 }
 
 .clear-content-btn {
-    padding: 12px 24px;
     background-color: #dc2626;
-    color: #ffffff;
-    border-radius: 8px;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-    transition-property: background-color, transform;
-    transition-duration: 300ms;
-    transition-timing-function: ease-in-out;
 }
 
 .clear-content-btn:hover {
@@ -113,6 +123,8 @@ const baseAppCss = `
     margin-bottom: 12px;
     border-bottom: 1px solid #bfdbfe;
     padding-bottom: 12px;
+    flex-wrap: wrap; /* 允許在窄螢幕上換行 */
+    gap: 12px;
 }
 
 .category-input {
@@ -124,7 +136,7 @@ const baseAppCss = `
     border-radius: 6px;
     border: 1px solid #93c5fd;
     flex-grow: 1;
-    margin-right: 16px;
+    min-width: 150px; /* 確保輸入框在換行時有足夠的寬度 */
 }
 
 .category-input:focus {
@@ -133,31 +145,40 @@ const baseAppCss = `
     box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);
 }
 
-.icon-button-group {
+.action-icon-button-group {
     display: flex;
     gap: 8px;
 }
 
-.icon-button {
+.action-icon-button {
     padding: 8px;
     background-color: #e5e7eb;
     border-radius: 9999px;
     color: #4b5563;
-    transition-property: background-color;
+    transition-property: background-color, transform;
     transition-duration: 200ms;
+    width: 32px; /* 統一按鈕大小 */
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 600;
 }
 
-.icon-button:hover {
+.action-icon-button:hover {
     background-color: #d1d5db;
+    transform: scale(1.1);
 }
 
-.icon-button.delete {
+.action-icon-button.delete {
     background-color: #fee2e2;
     color: #dc2626;
 }
 
-.icon-button.delete:hover {
+.action-icon-button.delete:hover {
     background-color: #fecaca;
+    transform: scale(1.1);
 }
 
 .page-list-title {
@@ -638,35 +659,29 @@ function App() {
                                 className="category-input"
                                 placeholder="分類名稱"
                             />
-                            <div className="icon-button-group">
+                            <div className="action-icon-button-group">
                                 <button
                                     onClick={() => moveCategory(category.id, 'up')}
                                     disabled={catIndex === 0}
-                                    className="icon-button"
+                                    className="action-icon-button"
                                     title="上移分類"
                                 >
-                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-600" viewBox="0 0 20 20" fill="currentColor">
-                                        <path fillRule="evenodd" d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z" clipRule="evenodd" />
-                                    </svg>
+                                    上
                                 </button>
                                 <button
                                     onClick={() => moveCategory(category.id, 'down')}
                                     disabled={catIndex === categories.length - 1}
-                                    className="icon-button"
+                                    className="action-icon-button"
                                     title="下移分類"
                                 >
-                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-600" viewBox="0 0 20 20" fill="currentColor">
-                                        <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
-                                    </svg>
+                                    下
                                 </button>
                                 <button
                                     onClick={() => removeCategory(category.id)}
-                                    className="icon-button delete"
+                                    className="action-icon-button delete"
                                     title="刪除分類"
                                 >
-                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                        <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm6 0a1 1 0 11-2 0v6a1 1 0 112 0V8z" clipRule="evenodd" />
-                                    </svg>
+                                    刪
                                 </button>
                             </div>
                         </div>
@@ -700,35 +715,29 @@ function App() {
                                         <option value="admin">管理者</option>
                                     </select>
                                 </div>
-                                <div className="icon-button-group">
+                                <div className="action-icon-button-group">
                                     <button
                                         onClick={() => movePage(category.id, page.id, 'up')}
                                         disabled={pageIndex === 0}
-                                        className="icon-button"
+                                        className="action-icon-button"
                                         title="上移頁面"
                                     >
-                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-gray-500" viewBox="0 0 20 20" fill="currentColor">
-                                            <path fillRule="evenodd" d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z" clipRule="evenodd" />
-                                        </svg>
+                                        上
                                     </button>
                                     <button
                                         onClick={() => movePage(category.id, page.id, 'down')}
                                         disabled={pageIndex === category.pages.length - 1}
-                                        className="icon-button"
+                                        className="action-icon-button"
                                         title="下移頁面"
                                     >
-                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-gray-500" viewBox="0 0 20 20" fill="currentColor">
-                                            <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
-                                        </svg>
+                                        下
                                     </button>
                                     <button
                                         onClick={() => removePage(category.id, page.id)}
-                                        className="icon-button delete"
+                                        className="action-icon-button delete"
                                         title="刪除頁面"
                                     >
-                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                                            <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm6 0a1 1 0 11-2 0v6a1 1 0 112 0V8z" clipRule="evenodd" />
-                                        </svg>
+                                        刪
                                     </button>
                                 </div>
                             </div>
