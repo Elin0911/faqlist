@@ -127,7 +127,14 @@ const baseAppCss = `
     gap: 12px;
 }
 
-.category-input {
+.category-header-fields {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex-grow: 1;
+}
+
+.category-input, .category-id-input {
     font-size: 20px;
     font-weight: 600;
     color: #1e40af;
@@ -136,10 +143,10 @@ const baseAppCss = `
     border-radius: 6px;
     border: 1px solid #93c5fd;
     flex-grow: 1;
-    min-width: 150px; /* 確保輸入框在換行時有足夠的寬度 */
+    min-width: 150px;
 }
 
-.category-input:focus {
+.category-input:focus, .category-id-input:focus {
     outline: 2px solid transparent;
     outline-offset: 2px;
     box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);
@@ -423,10 +430,10 @@ const generatedHtmlCss = (data) => {
         <h1 class="faq-title">FAQ 目錄</h1>
     `;
 
-    data.forEach((category) => {
+    data.forEach((category, catIndex) => { // 這裡增加了 catIndex 參數來判斷是否為第一個分類
         htmlContent += `
-        <div class="faq-category">
-            <input type="checkbox" id="faq-cat-${category.id}" class="faq-checkbox">
+        <div class="faq-category" id="${category.id}">
+            <input type="checkbox" id="faq-cat-${category.id}" class="faq-checkbox" ${catIndex === 0 ? 'checked' : ''}>
             <label for="faq-cat-${category.id}" class="faq-category-header">
                 ${category.name}
             </label>
@@ -456,8 +463,13 @@ const generatedHtmlCss = (data) => {
     return htmlContent;
 };
 
-// Helper function to generate a unique ID
-const generateId = () => Math.random().toString(36).substring(2, 9);
+// Helper function to generate a unique ID, ensuring it's valid for HTML IDs
+const generateId = (prefix = 'category-') => {
+    // Generate a random string and append it to the prefix
+    const randomString = Math.random().toString(36).substring(2, 9);
+    // Ensure the ID starts with a letter and contains only valid characters
+    return prefix + randomString;
+};
 
 function App() {
     const [categories, setCategories] = useState([]);
@@ -490,6 +502,13 @@ function App() {
 
     const removeCategory = (categoryId) => {
         setCategories(categories.filter(cat => cat.id !== categoryId));
+    };
+
+    // New function to handle ID changes
+    const updateCategoryId = (categoryId, newId) => {
+        setCategories(categories.map(cat =>
+            cat.id === categoryId ? { ...cat, id: newId } : cat
+        ));
     };
 
     const updateCategoryName = (categoryId, newName) => {
@@ -652,13 +671,23 @@ function App() {
                 {categories.map((category, catIndex) => (
                     <div key={category.id} className="category-card">
                         <div className="category-header">
-                            <input
-                                type="text"
-                                value={category.name}
-                                onChange={(e) => updateCategoryName(category.id, e.target.value)}
-                                className="category-input"
-                                placeholder="分類名稱"
-                            />
+                            <div className="category-header-fields">
+                                <input
+                                    type="text"
+                                    value={category.name}
+                                    onChange={(e) => updateCategoryName(category.id, e.target.value)}
+                                    className="category-input"
+                                    placeholder="分類名稱"
+                                />
+                                <input
+                                    type="text"
+                                    value={category.id}
+                                    onChange={(e) => updateCategoryId(category.id, e.target.value)}
+                                    className="category-id-input"
+                                    placeholder="錨點ID (例如: cat-about-us)"
+                                    style={{ fontSize: '16px', fontWeight: 'normal', backgroundColor: '#eef2ff' }}
+                                />
+                            </div>
                             <div className="action-icon-button-group">
                                 <button
                                     onClick={() => moveCategory(category.id, 'up')}
@@ -729,16 +758,16 @@ function App() {
                                         disabled={pageIndex === category.pages.length - 1}
                                         className="action-icon-button"
                                         title="下移頁面"
-                                    >
-                                        下
-                                    </button>
-                                    <button
-                                        onClick={() => removePage(category.id, page.id)}
-                                        className="action-icon-button delete"
-                                        title="刪除頁面"
-                                    >
-                                        刪
-                                    </button>
+                                >
+                                    下
+                                </button>
+                                <button
+                                    onClick={() => removePage(category.id, page.id)}
+                                    className="action-icon-button delete"
+                                    title="刪除頁面"
+                                >
+                                    刪
+                                </button>
                                 </div>
                             </div>
                         ))}
